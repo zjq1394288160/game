@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    body,html{
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    .box{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top:0;
+        left:0;
+        background: #aaff22;
+    }
+    .score{
+        margin: 30px;
+        width: 200px;
+        width: 250px;
+        font-size: 28px;
+        color: #fff;
+    }
+    .live{
+        margin: 30px;
+        width: 250px;
+        height: 50px;
+        font-size: 28px;
+        color: #fff;
+    }
+
+</style>
+<body>
+<div class="box">
+    <div class="score">分数：<span>0</span></div>
+    <div class="live">当前生命值：<span>10</span></div>
+</div>
+</body>
+</html>
+<script>
+    function Dzyx(live,score) {
+        this.length=5;
+        this.arr=[];
+        this.speed=5;
+        this.t=0;
+        this.live=10;
+        this.liveobj=live;
+        this.score=0;
+        this.scoreobj=score;
+    }
+    Dzyx.prototype={
+        play:function () {
+            this.Getletter();
+            this.move();
+            this.keydown();
+        },
+        Getletter:function () {
+            for(var i=0;i<this.length;i++){
+                this.Getrandom();
+            }
+        },
+        Getrandom:function () {
+            let img=document.createElement('img');
+            do{
+                let code=(Math.round(Math.random()*25))+65;
+                var letter=String.fromCharCode(code);
+            }while (this.check(letter));
+
+            img.src=`A_Z/${letter}.png`;
+            document.body.appendChild(img);
+            img.style.cssText=`
+                position:absolute;
+                left:${Math.random()*1000+100}px;
+                top:${Math.random()*50+20}px;
+            `;
+            img.alt=letter;
+            this.arr.push(img);
+        },
+        check:function (dom) {
+            return this.arr.some(function (value) {
+                return value.alt==dom;
+            })
+        },
+        move:function () {
+            let that=this;
+            this.t=setInterval(function () {    //()=>
+                for (var i=0;i<that.arr.length;i++){
+                    var currh=that.arr[i].offsetTop;
+                    var top=currh+that.speed;
+                    that.arr[i].style.top=top+'px';
+                    if (top>=500){
+                        that.live--;
+                        that.liveobj.innerHTML='当前生命值:'+that.live;
+                        if(that.live<=0){
+                            alert('Game over!');
+                            clearInterval(that.t);
+                            return;
+                        }
+                        document.body.removeChild(that.arr[i]);
+                        that.arr.splice(i,1);
+                        that.Getrandom();
+                    };
+                }
+            },100);
+        },
+        keydown:function () {
+            let that=this;
+            document.onkeydown=function (e) {
+                var code=e.keyCode;
+                var letter=String.fromCharCode(code);
+                var result=that.arr.findIndex(function (value) {
+                    return value.alt==letter;
+                });
+                if(result!=-1){
+                    that.score++;
+                    that.scoreobj.innerHTML='分数:'+that.score;
+                    if(that.score==5){
+                        var way=confirm('恭喜你已过第一关，是否进入下一关！')
+                        if(way){
+                            that.next();
+                        }else{
+                            window.close();
+                        }
+                    }
+                    document.body.removeChild(that.arr[result]);
+                    that.arr.splice(result,1);
+                    that.Getrandom();
+                }
+            }
+        },
+        next:function () {
+            clearInterval(this.t);
+            this.arr.forEach(function(value){
+                document.body.removeChild(value);
+            });
+            this.arr=[];
+            this.live+=2;
+            this.liveobj.innerHTML="当前生命值："+this.live;
+            this.score=0;
+            this.scoreobj.innerHTML="分数："+this.score;
+            this.length+=1;
+            this.speed+=2;
+            this.play();
+        }
+    };
+    var live=document.querySelector(".live");
+    var score=document.querySelector(".score");
+    let obj=new Dzyx(live,score);
+    obj.play();
+//    console.log((Math.round(Math.random()*25))+65);
+</script>

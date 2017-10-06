@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇</title>
+    <script src="fz.js"></script>
+    <script src="animate.js"></script>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .box{
+        width: 600px;
+        height: 600px;
+        border: 1px solid deepskyblue;
+        margin: 10px auto;
+        position: relative;
+    }
+    .restart{
+        padding: 15px 35px;
+        font-size: 25px;
+        color: #fff;
+        background: lawngreen;
+        border: 1px solid greenyellow;
+        border-radius: 10px;
+        box-sizing: border-box;
+        margin-bottom: 30px;
+    }
+    .pause{
+        padding: 15px 60px;
+        font-size: 25px;
+        color: #fff;
+        background: lawngreen;
+        border: 1px solid greenyellow;
+        border-radius: 10px;
+        box-sizing: border-box;
+        margin-bottom: 30px;
+    }
+    .box .zhezhao{
+        width: 600px;
+        height: 600px;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        background:url("tcs.jpg") no-repeat;
+        background-size: 100% 100%;
+    }
+    .zhezhao .start{
+        width: 143px;
+        height: 90px;
+        background: yellow;
+        position: absolute;
+        bottom: 75px;
+        left: 203px;
+        border-radius: 20px;
+        opacity:0;
+    }
+    .box div{
+        width: 30px;
+        height: 30px;
+        float: left;
+        /*border: 1px solid deepskyblue;*/
+        box-sizing: border-box;
+    }
+    .she{
+      background: red;
+      border-radius: 5px;
+    }
+    .food{
+        background: greenyellow;
+        border-radius: 50%;
+        /*pointer-events: none;*/
+    }
+    .score{
+        height: 65px;
+        padding: 15px 35px;
+        box-sizing: border-box;
+        font-size: 25px;
+        color: #fff;
+        background: lawngreen;
+        border: 1px solid greenyellow;
+        border-radius: 10px;
+        box-sizing: border-box;
+        margin-bottom: 30px;
+    }
+    .score span{
+        text-align: center;
+    }
+    .box .dahezi{
+        position: absolute;
+        top:30px;
+        right: -350px;
+        width: 300px;
+        height: auto;
+    }
+
+</style>
+<body>
+  <div class="box">
+      <div class="zhezhao">
+          <div class="start"></div>
+      </div>
+      <div class="dahezi">
+          <button class="score">
+              <span>分数：</span>
+              <span class="fen">0</span>
+          </button>
+          <button class="pause">暂停</button>
+          <button class="restart">重新开始</button>
+      </div>
+  </div>
+
+</body>
+</html>
+<script>
+    //开始按钮
+    let start=$('.start',false);
+    let zhezhao=$('.zhezhao',false);
+    let t;
+    start.onclick=function () {
+         t=setInterval(move,200);
+        animate(zhezhao,{height:0})
+    };
+    //暂停按钮
+
+    let pause=$('.pause',false);
+    let m=0;
+    pause.onclick=function () {
+        m++;
+        if(m%2==0){
+            pause.innerHTML='暂停';
+            t=setInterval(move,200);
+        }else {
+            pause.innerHTML='开始';
+            clearInterval(t);
+        };
+
+    };
+    //重新开始
+    let restart=$('.restart',false);
+    restart.onclick=function () {
+        history.go(0);
+    };
+//    游戏场景的构建
+    let box=$('.box',false);
+    for(let i=0;i<20;i++){
+        for(let j=0;j<20;j++){
+            let div=$('<div>');
+            div.id='r'+j+'-'+i;
+            box.appendChild(div);
+        }
+    }
+
+    //画蛇
+    let she=[{x:0,y:0},{x:1,y:0},{x:2,y:0}];
+    she.forEach(function (value) {
+        let body=$('#r'+value.x+'-'+value.y,false);
+        body.classList.add('she');
+    })
+
+    //获取食物
+    let food=getFood();
+    $('#r'+food.x+'-'+food.y,false).classList.add('food');
+    function getFood() {
+        do{
+            var x=Math.floor(Math.random()*20);
+            var y=Math.floor(Math.random()*20);
+        }while (check(x,y));
+        let foodobj = {x:x,y:y};
+        return foodobj;
+    }
+
+    function check(a,b) {
+        var result = she.some(function (value) {
+            return value.x==a&&value.y==b;
+        });
+        return result;
+    };
+
+
+    var way='right';
+    //用键盘操作蛇
+    document.onkeydown=function (e) {
+        var key = e.keyCode;
+        if(key==37){
+            if(way == 'right'){
+                return;
+            }
+            way='left'
+        }else if(key==38){
+            if(way == 'down'){
+                return;
+            }
+            way='up'
+        }else if(key==39){
+            if(way == 'left'){
+                return;
+            }
+            way='right'
+        }else if(key==40){
+            if(way == 'up'){
+                return;
+            }
+            way='down'
+        }
+    };
+    let n=0;
+    let score=$('.score .fen',false);
+    function move() {
+        switch (way){
+            case 'right':
+                var newobjx = she[she.length-1].x+1;
+                var newobjy = she[she.length-1].y;
+            break;
+            case 'left':
+                var newobjx = she[she.length-1].x-1;
+                var newobjy = she[she.length-1].y;
+            break;
+            case 'up':
+                var newobjx = she[she.length-1].x;
+                var newobjy = she[she.length-1].y-1;
+            break;
+            case 'down':
+                var newobjx = she[she.length-1].x;
+                var newobjy = she[she.length-1].y+1;
+                break;
+        }
+        if(newobjx>19||newobjx<0||newobjy<0||newobjy>19||check(newobjx,newobjy)){
+            alert('game over!');
+            clearInterval(t);
+            return;
+        }
+        var newobj = {x:newobjx,y:newobjy};
+        she.push(newobj);
+        let newt=$('#r'+newobjx+'-'+newobjy,false);
+        newt.className=('she');
+        if(newobjx==food.x&&newobjy==food.y){
+            food=getFood();
+            $('#r'+food.x+'-'+food.y,false).classList.add('food');
+            n+=100;
+            score.innerHTML=n;
+
+        }else {
+            $('#r'+she[0].x+'-'+she[0].y,false).classList.remove('she');
+            she.shift();
+        }
+
+    }
+
+
+</script>
